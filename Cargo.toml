@@ -16,4 +16,8 @@ path = "src/main.rs"
 name = "synacor-challenge-print"
 path = "src/print.rs"
 
+[[bin]]
+name = "synacor-challenge-coin-puzzle"
+path = "src/coins.rs"
+
 [dependencies]
