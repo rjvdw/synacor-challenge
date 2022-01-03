@@ -216,9 +216,11 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 // in a
                 if input_chars.is_empty() {
                     stdin.read_line(&mut input_buffer)?;
+                    println!();
                     for ch in input_buffer.chars().rev() {
                         input_chars.push(ch);
                     }
+                    input_buffer = String::new();
                 }
 
                 let a = memory[program_counter + 1];
