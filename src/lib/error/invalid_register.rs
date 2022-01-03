@@ -1,9 +1,9 @@
 use std::fmt;
 
-pub(crate) struct InvalidRegister(u16);
+pub struct InvalidRegister(u16);
 
 impl InvalidRegister {
-    pub(crate) fn new(value: u16) -> InvalidRegister {
+    pub fn new(value: u16) -> InvalidRegister {
         InvalidRegister(value)
     }
 }

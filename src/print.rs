@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use synacor_challenge::error::missing_required_argument::MissingRequiredArgument;
-use synacor_challenge::{process_input, run};
+use synacor_challenge::{print, process_input};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_file = env::args()
@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let file = File::open(&input_file)?;
     let memory = process_input(BufReader::new(file))?;
-    run(memory)?;
+    print(memory)?;
 
     Ok(())
 }

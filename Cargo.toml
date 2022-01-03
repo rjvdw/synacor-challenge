@@ -2,5 +2,18 @@
 name = "synacor-challenge"
 version = "0.1.0"
 edition = "2021"
+default-run = "synacor-challenge"
+
+[lib]
+name = "synacor_challenge"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "synacor-challenge"
+path = "src/main.rs"
+
+[[bin]]
+name = "synacor-challenge-print"
+path = "src/print.rs"
 
 [dependencies]

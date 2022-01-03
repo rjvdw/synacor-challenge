@@ -1,9 +1,9 @@
 use std::fmt;
 
-pub(crate) struct InvalidOpCode(u16);
+pub struct InvalidOpCode(u16);
 
 impl InvalidOpCode {
-    pub(crate) fn new(op_code: u16) -> InvalidOpCode {
+    pub fn new(op_code: u16) -> InvalidOpCode {
         InvalidOpCode(op_code)
     }
 }

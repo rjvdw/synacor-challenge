@@ -1,6 +1,6 @@
 use std::fmt;
 
-pub(crate) struct EmptyStack;
+pub struct EmptyStack;
 
 impl fmt::Debug for EmptyStack {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

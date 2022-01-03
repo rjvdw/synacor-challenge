@@ -1,9 +1,9 @@
 use std::fmt;
 
-pub(crate) struct MissingRequiredArgument(String);
+pub struct MissingRequiredArgument(String);
 
 impl MissingRequiredArgument {
-    pub(crate) fn new(arg: &str) -> MissingRequiredArgument {
+    pub fn new(arg: &str) -> MissingRequiredArgument {
         MissingRequiredArgument(arg.to_string())
     }
 }
