@@ -11,15 +11,21 @@ use crate::error::invalid_register::InvalidRegister;
 
 pub mod error;
 
-pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(
+    mut memory: Vec<u16>,
+    start_at: usize,
+    reg8: u16,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut input_buffer = String::new();
     let mut input_chars = vec![];
     let stdin = io::stdin();
 
     let mut seen = HashSet::new();
-    let mut program_counter = 0;
+    let mut program_counter = start_at;
     let mut register = [0; 8];
     let mut stack = vec![];
+
+    register[7] = reg8;
     let mut p = register[7];
 
     'program_loop: loop {
@@ -124,7 +130,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 let b = val(b, &mut register);
                 let c = memory[program_counter + 3];
                 let c = val(c, &mut register);
-                register[a] = (b + c) % 0x8000;
+                register[a] = ((b as u64 + c as u64) % 0x8000) as u16;
                 program_counter += 4;
             }
             0x0a => {
