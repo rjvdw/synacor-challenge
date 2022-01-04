@@ -5,22 +5,22 @@ fn main() {
         let a = NUMBERS[i_a];
         for i_b in 0..5 {
             if i_a == i_b {
-                continue
+                continue;
             }
             let b = NUMBERS[i_b];
             for i_c in 0..5 {
                 if i_a == i_c || i_b == i_c {
-                    continue
+                    continue;
                 }
                 let c = NUMBERS[i_c];
                 for i_d in 0..5 {
                     if i_a == i_d || i_b == i_d || i_c == i_d {
-                        continue
+                        continue;
                     }
                     let d = NUMBERS[i_d];
                     for i_e in 0..5 {
                         if i_a == i_e || i_b == i_e || i_c == i_e || i_d == i_e {
-                            continue
+                            continue;
                         }
                         let e = NUMBERS[i_e];
 
