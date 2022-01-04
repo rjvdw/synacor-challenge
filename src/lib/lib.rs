@@ -30,11 +30,11 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
         let op_code = memory[program_counter];
         seen.insert(program_counter);
         match op_code {
-            0 => {
+            0x0000 => {
                 // halt
                 break;
             }
-            1 => {
+            0x0001 => {
                 // set a b
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -43,14 +43,14 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = b;
                 program_counter += 3;
             }
-            2 => {
+            0x0002 => {
                 // push a
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
                 stack.push(a);
                 program_counter += 2;
             }
-            3 => {
+            0x0003 => {
                 // pop a
                 match stack.pop() {
                     Some(v) => {
@@ -64,7 +64,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-            4 => {
+            0x0004 => {
                 // eq a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -75,7 +75,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = if b == c { 1 } else { 0 };
                 program_counter += 4;
             }
-            5 => {
+            0x0005 => {
                 // gt a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -86,13 +86,13 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = if b > c { 1 } else { 0 };
                 program_counter += 4;
             }
-            6 => {
+            0x0006 => {
                 // jmp a
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
                 program_counter = a as usize;
             }
-            7 => {
+            0x0007 => {
                 // jt a b
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
@@ -104,7 +104,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                     program_counter += 3;
                 }
             }
-            8 => {
+            0x0008 => {
                 // jf a b
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
@@ -116,7 +116,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                     program_counter += 3;
                 }
             }
-            9 => {
+            0x0009 => {
                 // add a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -124,10 +124,10 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 let b = val(b, &mut register);
                 let c = memory[program_counter + 3];
                 let c = val(c, &mut register);
-                register[a] = (b + c) % 32768;
+                register[a] = (b + c) % 0x8000;
                 program_counter += 4;
             }
-            10 => {
+            0x0a => {
                 // mult a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -135,10 +135,10 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 let b = val(b, &mut register);
                 let c = memory[program_counter + 3];
                 let c = val(c, &mut register);
-                register[a] = ((b as u64 * c as u64) % 32768) as u16;
+                register[a] = ((b as u64 * c as u64) % 0x8000) as u16;
                 program_counter += 4;
             }
-            11 => {
+            0x0b => {
                 // mod a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -149,7 +149,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = b % c;
                 program_counter += 4;
             }
-            12 => {
+            0x0c => {
                 // and a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -160,7 +160,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = b & c;
                 program_counter += 4;
             }
-            13 => {
+            0x0d => {
                 // or a b c
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -171,16 +171,16 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = b | c;
                 program_counter += 4;
             }
-            14 => {
+            0x0e => {
                 // not a b
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
                 let b = memory[program_counter + 2];
                 let b = val(b, &mut register);
-                register[a] = b ^ 0b111_1111_1111_1111;
+                register[a] = b ^ 0x7fff;
                 program_counter += 3;
             }
-            15 => {
+            0x0f => {
                 // rmem a b
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
@@ -189,7 +189,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = memory[b as usize];
                 program_counter += 3;
             }
-            16 => {
+            0x0010 => {
                 // wmem a b
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
@@ -198,14 +198,14 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 memory[a as usize] = b;
                 program_counter += 3;
             }
-            17 => {
+            0x0011 => {
                 // call a
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
                 stack.push(program_counter as u16 + 2);
                 program_counter = a as usize;
             }
-            18 => {
+            0x0012 => {
                 // ret
                 match stack.pop() {
                     Some(a) => {
@@ -216,14 +216,14 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-            19 => {
+            0x0013 => {
                 // out a
                 let a = memory[program_counter + 1];
                 let a = val(a, &mut register);
                 print!("{}", (a as u8) as char);
                 program_counter += 2;
             }
-            20 => {
+            0x0014 => {
                 // in a
                 while input_chars.is_empty() {
                     stdin.read_line(&mut input_buffer)?;
@@ -255,7 +255,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                 register[a] = (v as u8) as u16;
                 program_counter += 2;
             }
-            21 => {
+            0x0015 => {
                 // noop
                 program_counter += 1;
             }
@@ -271,16 +271,16 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn reg(number: u16) -> Result<usize, InvalidRegister> {
-    if (32768..=32775).contains(&number) {
-        Ok((number - 32768) as usize)
+    if (0x8000..0x8008).contains(&number) {
+        Ok((number - 0x8000) as usize)
     } else {
         Err(InvalidRegister::new(number))
     }
 }
 
 fn val(number: u16, register: &mut [u16; 8]) -> u16 {
-    if (32768..=32775).contains(&number) {
-        register[(number - 32768) as usize]
+    if (0x8000..0x8008).contains(&number) {
+        register[(number - 0x8000) as usize]
     } else {
         number
     }
@@ -321,13 +321,13 @@ fn dump_memory(memory: &[u16], register: &[u16]) -> Result<(), Box<dyn std::erro
 
     let mut file = File::create(mem_dump_file)?;
     for number in memory {
-        file.write_all(format!("{}\n", number).as_bytes())?;
+        file.write_all(format!("{:04x}\n", number).as_bytes())?;
     }
     println!("[debug] memory dump was written to {}", mem_dump_file);
 
     let mut file = File::create(register_dump_file)?;
     for number in register {
-        file.write_all(format!("{}\n", number).as_bytes())?;
+        file.write_all(format!("{:04x}\n", number).as_bytes())?;
     }
     println!(
         "[debug] register dump was written to {}",
