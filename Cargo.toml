@@ -21,3 +21,4 @@ name = "synacor-challenge-coin-puzzle"
 path = "src/coins.rs"
 
 [dependencies]
+itertools = "0.10.3"

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::io;
 use std::io::{BufReader, Read};
 
@@ -12,16 +13,23 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
     let mut input_chars = vec![];
     let stdin = io::stdin();
 
+    let mut seen = HashSet::new();
     let mut program_counter = 0;
     let mut register = [0; 8];
     let mut stack = vec![];
+    let mut p = register[7];
 
     loop {
+        if p != register[7] {
+            println!("[debug] 8th register has value {}", register[7]);
+            p = register[7];
+        }
         let op_code = memory[program_counter];
+        seen.insert(program_counter);
         match op_code {
             0 => {
                 // halt
-                return Ok(());
+                break;
             }
             1 => {
                 // set a b
@@ -201,7 +209,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
                         program_counter = a as usize;
                     }
                     None => {
-                        return Ok(());
+                        break;
                     }
                 }
             }
@@ -225,9 +233,13 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
 
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
-                let v = input_chars.pop().unwrap();
-                register[a] = (v as u8) as u16;
-                program_counter += 2;
+                if let Some(v) = input_chars.pop() {
+                    register[a] = (v as u8) as u16;
+                    program_counter += 2;
+                } else {
+                    println!("[debug] empty input received, user probably pressed ^D, halting");
+                    break;
+                }
             }
             21 => {
                 // noop
@@ -238,6 +250,10 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
+
+    println!("[debug] a total of {} instructions were seen", seen.len());
+
+    Ok(())
 }
 
 fn reg(number: u16) -> Result<usize, InvalidRegister> {
