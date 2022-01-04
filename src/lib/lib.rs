@@ -1,6 +1,9 @@
 use std::collections::HashSet;
-use std::io;
-use std::io::{BufReader, Read};
+use std::fs::File;
+use std::io::{BufReader, Read, Write};
+use std::{env, fs, io};
+
+use chrono::Utc;
 
 use crate::error::empty_stack::EmptyStack;
 use crate::error::invalid_op_code::InvalidOpCode;
@@ -19,7 +22,7 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
     let mut stack = vec![];
     let mut p = register[7];
 
-    loop {
+    'program_loop: loop {
         if p != register[7] {
             println!("[debug] 8th register has value {}", register[7]);
             p = register[7];
@@ -222,24 +225,35 @@ pub fn run(mut memory: Vec<u16>) -> Result<(), Box<dyn std::error::Error>> {
             }
             20 => {
                 // in a
-                if input_chars.is_empty() {
+                while input_chars.is_empty() {
                     stdin.read_line(&mut input_buffer)?;
                     println!();
-                    for ch in input_buffer.chars().rev() {
-                        input_chars.push(ch);
+                    if input_buffer.is_empty() {
+                        println!("[debug] empty input received, user probably pressed ^D, halting");
+                        break 'program_loop;
+                    } else if input_buffer == *"MEM DUMP\n" {
+                        dump_memory(&memory, &register)?;
+                    } else if input_buffer == *"HALT\n" {
+                        break 'program_loop;
+                    } else {
+                        if input_buffer == *"help\n" {
+                            println!("HALT");
+                            println!("  [debug] Immediately stops the execution of the program.");
+                            println!("MEM DUMP");
+                            println!("  [debug] Writes a dump of the memory and the registers to the disk.");
+                        }
+                        for ch in input_buffer.chars().rev() {
+                            input_chars.push(ch);
+                        }
                     }
                     input_buffer = String::new();
                 }
 
                 let a = memory[program_counter + 1];
                 let a = reg(a)?;
-                if let Some(v) = input_chars.pop() {
-                    register[a] = (v as u8) as u16;
-                    program_counter += 2;
-                } else {
-                    println!("[debug] empty input received, user probably pressed ^D, halting");
-                    break;
-                }
+                let v = input_chars.pop().unwrap();
+                register[a] = (v as u8) as u16;
+                program_counter += 2;
             }
             21 => {
                 // noop
@@ -286,4 +300,38 @@ pub fn process_input<R: Read>(
             numbers.push(u16::from_le_bytes([buffer[i], buffer[i + 1]]));
         }
     }
+}
+
+fn dump_memory(memory: &[u16], register: &[u16]) -> Result<(), Box<dyn std::error::Error>> {
+    let now = Utc::now();
+    let mut tmp_dir = env::temp_dir();
+    tmp_dir.push("synacor-challenge-memory-dumps");
+
+    let mut mem_dump_file = tmp_dir.clone();
+    mem_dump_file.push(format!("memory-{:?}.txt", now));
+    let mem_dump_file = mem_dump_file.to_str().unwrap();
+
+    let mut register_dump_file = tmp_dir.clone();
+    register_dump_file.push(format!("registers-{:?}.txt", now));
+    let register_dump_file = register_dump_file.to_str().unwrap();
+
+    if !tmp_dir.exists() {
+        fs::create_dir(tmp_dir)?;
+    }
+
+    let mut file = File::create(mem_dump_file)?;
+    for number in memory {
+        file.write_all(format!("{}\n", number).as_bytes())?;
+    }
+    println!("[debug] memory dump was written to {}", mem_dump_file);
+
+    let mut file = File::create(register_dump_file)?;
+    for number in register {
+        file.write_all(format!("{}\n", number).as_bytes())?;
+    }
+    println!(
+        "[debug] register dump was written to {}",
+        register_dump_file
+    );
+    Ok(())
 }
